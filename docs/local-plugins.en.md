@@ -2,7 +2,7 @@
 
 [日本語](local-plugins.ja.md) · [Repository README](../README.md)
 
-This guide documents changes in this working copy relative to the cloned repository. It does not claim authorship of inherited plugins. The repository has not yet been forked or published by these documentation changes.
+This guide documents changes in this working copy relative to the cloned repository.
 
 ## Provenance
 
@@ -89,11 +89,36 @@ With no matches, selection and assignments remain unchanged and a status message
 
 **This plugin separates candidates; it neither deletes spikes nor automatically marks them for exclusion.** In particular, cross-cluster coincidence alone does not establish duplication. Inspect waveforms and spatial distributions, and retain one valid representation of a true firing event before marking unwanted candidates manually.
 
+## ExclusionLabelPlugin
+
+Source: [ExclusionLabelPlugin.py](../plugins/ExclusionLabelPlugin.py). Shortcut: **Alt+Shift+E**.
+
+After visual review, select the clusters to mark and invoke the shortcut. The toggle is **per cluster**, including main and similarity selections:
+
+| Existing `exclusion` value | New value |
+|---|---|
+| Unset | `doubled` |
+| `doubled` | Unset (`None` internally) |
+| Any other value | `doubled` (overwrites the previous value) |
+
+The `exclusion` column is added through Phy's label operation. A selection mixing already marked and unmarked clusters swaps their individual states; it does not force all selected clusters to the same value. An empty selection only displays guidance.
+
+Marking and clearing use Phy's normal history. If both happen in one invocation, **two Undo steps** are needed to revert the entire invocation. Save with Ctrl+S to persist the label in the dataset's `cluster_exclusion.tsv`. Unset values are omitted from that metadata file; unlisted clusters are not marked.
+
+Equivalent manual labeling: select clusters, press **L**, and enter:
+
+```text
+exclusion doubled
+```
+
+This plugin does not delete or filter any spikes. Downstream code must read `cluster_exclusion.tsv` and remove spikes whose current `spike_clusters.npy` cluster ID has `exclusion == doubled`, **before** computing final analysis/QC metrics. Keep the original data and record removed counts. Artifact notes should not automatically trigger this double-count exclusion rule. Recheck labels after later splits or merges because Phy may propagate metadata to descendants.
+
 ## ChannelReclusterPlugin
 
 Source: [ChannelReclusterPlugin.py](../plugins/ChannelReclusterPlugin.py). Shortcut: **Alt+Shift+R**.
 
 Select exactly one cluster and open a WaveformView, then invoke the shortcut.
+This provides functionality similar to reclustering in Klusta.
 
 ### Channel and feature selection
 
@@ -136,30 +161,6 @@ Feature loading and input-file preparation occur on the GUI thread. The external
 
 A valid multi-cluster result is applied as one undoable split. A single-cluster result leaves assignments unchanged. Cancellation or process failure does not apply results. If the source cluster membership changed during execution, or Merge mode is active at completion, results are rejected. Temporary files are cleaned up afterward. These checks do not lock the source against editing while the process runs.
 
-## ExclusionLabelPlugin
-
-Source: [ExclusionLabelPlugin.py](../plugins/ExclusionLabelPlugin.py). Shortcut: **Alt+Shift+E**.
-
-After visual review, select the clusters to mark and invoke the shortcut. The toggle is **per cluster**, including main and similarity selections:
-
-| Existing `exclusion` value | New value |
-|---|---|
-| Unset | `doubled` |
-| `doubled` | Unset (`None` internally) |
-| Any other value | `doubled` (overwrites the previous value) |
-
-The `exclusion` column is added through Phy's label operation. A selection mixing already marked and unmarked clusters swaps their individual states; it does not force all selected clusters to the same value. An empty selection only displays guidance.
-
-Marking and clearing use Phy's normal history. If both happen in one invocation, **two Undo steps** are needed to revert the entire invocation. Save with Ctrl+S to persist the label in the dataset's `cluster_exclusion.tsv`. Unset values are omitted from that metadata file; unlisted clusters are not marked.
-
-Equivalent manual labeling: select clusters, press **L**, and enter:
-
-```text
-exclusion doubled
-```
-
-This plugin does not delete or filter any spikes. Downstream code must read `cluster_exclusion.tsv` and remove spikes whose current `spike_clusters.npy` cluster ID has `exclusion == doubled`, **before** computing final analysis/QC metrics. Keep the original data and record removed counts. Artifact notes should not automatically trigger this double-count exclusion rule. Recheck labels after later splits or merges because Phy may propagate metadata to descendants.
-
 ## Changes to inherited plugins
 
 ### CustomActionPlugin
@@ -179,5 +180,5 @@ The current working-copy changes affect the local-PCA action (Alt+Shift+K): the 
 1. Inspect a cluster; optionally recluster it with ChannelReclusterPlugin.
 2. Separate within-cluster or cross-cluster duplicate candidates with DoubleCountPlugin.
 3. Review the separated candidates and decide which detections are redundant.
-4. Manually toggle `exclusion=doubled` only on clusters intended for removal.
+4. Set `exclusion=doubled` only on clusters intended for removal, either with Phy's manual label action or with ExclusionLabelPlugin.
 5. Save in Phy, then apply the explicit label-based filter in downstream analysis/QC.
