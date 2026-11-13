@@ -1,0 +1,58 @@
+# Operating-system metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+desktop.ini
+
+# Python bytecode, environments, and tooling caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local editor settings and temporary files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.ipynb_checkpoints/
+
+# Local credentials and environment configuration
+.env
+.env.*
+!.env.example
+.aws/
+
+# External KlustaKwik downloads/builds (obtain separately from upstream)
+/klustakwik/
+/KlustaKwik
+/klustakwik.exe
+/klustakwik.zip
+*.o
+*.obj
+*.pdb
+
+# Generated KlustaKwik clustering inputs, outputs, and logs
+*.fet.*
+*.clu.*
+*.klg.*
+*.fmask.*
+*.mask.*
+/phy-klustakwik-*/
+
+# Local recording data and Phy session state
+/data/
+/recordings/
+.phy/

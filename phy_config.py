@@ -18,6 +18,9 @@ c.TemplateGUI.plugins = [
     'GoodLabelsPlugin',
     'RawDataFilterPlugin',
     'SplitShortISI',
+    'DoubleCountPlugin',
+    'ExclusionLabelPlugin',
+    'ChannelReclusterPlugin',
     'Recluster',
     
     'StableMahalanobisDetection',

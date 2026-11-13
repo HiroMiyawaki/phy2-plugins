@@ -5,6 +5,7 @@ import os
 import numpy as np
 
 import platform
+import subprocess
 
 from pathlib import Path
 from subprocess import Popen
@@ -98,13 +99,17 @@ class Recluster(IPlugin):
                 if platform.system() == 'Windows':
                     program = os.path.join(phy_config_dir(),'klustakwik.exe')
                 else:
-                    program = '~/klustakwik/KlustaKwik'
+                    program = Path('~/github/klustakwik/KlustaKwik').expanduser()
                 cmd = [program, name, str(shank)]
                 cmd +=["-UseDistributional",'0',"-MaxPossibleClusters",'20',"-MinClusters",'20'] #,"-MinClusters",'2',"-MaxClusters",'12'   ,"-MaxClusters",'12',"-MaxClusters",'12'
 
                 # Run KlustaKwik
-                p = Popen(cmd)
-                p.wait()
+                env = os.environ.copy()
+                env["OMP_NUM_THREADS"] = "12"
+                env["OMP_DYNAMIC"] = "FALSE"
+                # p = Popen(cmd, env=env))
+                # p.wait()
+                subprocess.run(cmd, env=env, check=True)
                 # Read back the clusters
                 spike_clusters = read_clusters(name + '.clu.' + str(shank))
                 controller.supervisor.actions.split(spike_ids, spike_clusters)

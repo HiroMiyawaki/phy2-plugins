@@ -28,16 +28,15 @@ class CustomActionPlugin(IPlugin):
                 def find_unsorted(cluster_ids):
                     """This function is called when the ordered list of cluster ids is returned
                     by the Javascript view."""
-                    groups = controller.supervisor.cluster_meta.get('group',list(range(max(cluster_ids))))
                     for ii in cluster_ids:
-                        if groups[ii] == None or groups[ii] == 'unsorted':
+                        group = controller.supervisor.cluster_meta.get('group', ii)
+                        if group is None or group == 'unsorted':
                             s = controller.supervisor.clustering.spikes_in_clusters([ii])
                             if len(s)>0:
-                                firstclu = ii
+                                controller.supervisor.select(ii)
                                 break
-                    
-                    if 'firstclu' in locals():
-                        controller.supervisor.select(firstclu)
+                    else:
+                        gui.status_message = "No unsorted clusters found."
 
                     return
 
